@@ -90,4 +90,122 @@
     }
     .card-desc {
       font-size: 12px;
-      co
+      color: #9ca3af;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-tag {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid #4b5563;
+      color: #9ca3af;
+      flex-shrink: 0;
+    }
+    .footer {
+      margin-top: 28px;
+      text-align: center;
+      font-size: 11px;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="profile">
+      <div class="avatar">MT</div>
+      <div class="name">@macflytotheworld</div>
+      <div class="bio">Tech, gadgets & lifestyle recommendations with direct affiliate links.</div>
+    </header>
+
+    <main>
+      <div id="links" class="links"></div>
+    </main>
+
+    <div class="footer">
+      Powered by MacflyToTheWorld — Affiliate links may generate commission.
+    </div>
+  </div>
+
+  <script>
+    // Replace with your Published CSV link from Google Sheets
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTaP8Ts1d3hiug4Xk-Dgi0OiQiSGKfaQo3pbGrk-J0QyBXChHldTNRXG_F4JPzbz58irxEO_USlIngn/pub?gid=0&single=true&output=csv";
+
+    async function fetchLinks() {
+      try {
+        const res = await fetch(CSV_URL);
+        const text = await res.text();
+        const rows = text.trim().split("\n").map(r => r.split(","));
+
+        const header = rows[0].map(h => h.trim());
+        const dataRows = rows.slice(1);
+
+        const items = dataRows
+          .map(cols => {
+            const obj = {};
+            header.forEach((key, i) => {
+              obj[key] = (cols[i] || "").trim();
+            });
+            return obj;
+          })
+          .filter(row => row.affiliate_url && row.active.toLowerCase() !== "false");
+
+        renderLinks(items);
+      } catch (err) {
+        console.error("Failed to load CSV:", err);
+      }
+    }
+
+    function renderLinks(items) {
+      const container = document.getElementById("links");
+
+      if (!items.length) {
+        container.innerHTML = "<p style='font-size:13px;color:#9ca3af;text-align:center;'>No active links available.</p>";
+        return;
+      }
+
+      items.forEach(item => {
+        const a = document.createElement("a");
+        a.href = item.affiliate_url;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.className = "card";
+
+        const img = document.createElement("img");
+        img.className = "thumb";
+        img.src = item.image_url || "https://via.placeholder.com/80x80.png?text=+";
+        img.alt = item.title || "Product";
+
+        const textBox = document.createElement("div");
+        textBox.className = "card-text";
+
+        const title = document.createElement("div");
+        title.className = "card-title";
+        title.textContent = item.title || "Product";
+
+        const desc = document.createElement("div");
+        desc.className = "card-desc";
+        desc.textContent = item.description || "";
+
+        textBox.appendChild(title);
+        textBox.appendChild(desc);
+
+        const tag = document.createElement("div");
+        tag.className = "card-tag";
+        tag.textContent = "Product";
+
+        a.appendChild(img);
+        a.appendChild(textBox);
+        a.appendChild(tag);
+
+        container.appendChild(a);
+      });
+    }
+
+    fetchLinks();
+  </script>
+</body>
+</html>
